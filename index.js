@@ -17,11 +17,48 @@ Go code!
 
 const express = require("express");
 const server = express();
+// const data = require("./data");
+
+server.use(express.json());
+
+server.get("/", (req, res) => {
+  res.json({ message: "Hello from the Server!" });
+});
+
+//===============================
+// GET
+//===============================
+
+// server.get("/data/helpers", (req, res) => {
+//     const users = db.getUsers();
+  
+//     if (users) {
+//       res.json(users);
+//     } else {
+//       res.status(500).json({
+//         errorMessage: "The users information could not be retrieved.",
+//       });
+//     }
+//   });
+
+
+//===============================
+// POST
+//===============================
 
 
 
 
+//===============================
+// PUT
+//===============================
 
+
+
+
+//===============================
+// DELETE
+//===============================
 
 server.listen(5000, () => {
     console.log("Server initialized on port 5000");
