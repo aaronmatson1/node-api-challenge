@@ -12,3 +12,17 @@ I need this code, but don't know where, perhaps should make some middleware, don
 
 Go code!
 */
+
+//^^^^ This is not helping.....^^^^ -AM
+
+const express = require("express");
+const server = express();
+
+
+
+
+
+
+server.listen(5000, () => {
+    console.log("Server initialized on port 5000");
+  });
