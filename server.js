@@ -1,25 +1,24 @@
 const express = require('express');
 const server = express();
-const cors = require("cors");
+const helmet = require("helmet");
 const projects = require("./Projects/projects")
 const actions = require("./Actions/actions")
 
-const server = express();
-
 server.use(express.json());
-server.use(cors());
-server.use(logger); 
+server.use(helmet());
+server.use("api/actions", actions)
+server.use("api/projects", projects)
 
-server.use("/actions", actions)
-server.use('/projects', projects)
 
 server.get('/', (req, res) => {
-    res.send(`<h2>Let's write some middleware!</h2>`);
-  });
+    res.send(`<h2>Hey Dude!</h2>`)
+})
 
-function logger(req, res, next) {
-console.log(`${new Date().toISOString()} ${req.ip} ${req.method} ${req.url}`)
-next();
+function errorHandler(error, req, res, next) {
+    console.log('ajm server.js line 21 error: ', error.message);
+    res.status(400).json({ message: error.message });
 }
 
-module.exports = server;
+server.use(errorHandler);
+
+module.exports = server; 

@@ -1,97 +1,150 @@
 const express = require('express');
-const Hubs = require('../data/helpers/projectModel');
+const Projects = require('../data/helpers/projectModel.js');
+const Actions = require('../data/helpers/actionModel.js');
 
 const router =  express.Router();
 
 //==========================================================
-// CREATE/get
+// UPDATE
 //==========================================================
 
-router.get('/', (req, res) => {
-    Hubs.get(req.query)
-    .then(hubs => {
-      res.status(200).json(hubs);
-    })
-    .catch(error => {
-      // log error to database
-      console.log(error);
-      res.status(500).json({
-        message: 'Error retrieving the hubs',
-      });
-    });
+router.post('/', validateProject, (req, res) => {
+    Projects.insert(req.body)
+      .then(project => {
+        res.status(201).json(project);
+      })
+      .catch(error => {
+        console.log(error);
+        res.status(500).json({ message: "Error adding the project to database." });
+      })
+  });
+  
+  router.post('/:id/actions', validateAction, (req, res) => {
+    Actions.insert(req.body)
+      .then(action => {
+        res.status(201).json(action);
+      })
+      .catch(error => {
+        console.log(error);
+        res.status(500).json({ message: "Error adding action."})
+      })
+  
+  });
+
+//==========================================================
+// CREATE/get
+//==========================================================
+  
+  router.get('/', (req, res) => {
+    Projects.get()
+      .then(project => {
+        res.status(200).json(project);
+      })
+      .catch(error => {
+        console.log(error);
+        res.status(500).json({ message: "Error retrieving the projects."})
+      })
+  });
+  
+
+  router.get('/:id', validateProjectId, (req, res) => {
+    res.status(200).json(req.project)
+  });
+  
+  router.get('/:id/actions', validateProjectId, (req, res) => {
+    Projects.getProjectActions(req.params.id)
+      .then(action => {
+        res.status(200).json(action)
+      })
+      .catch(error => {
+        console.log(error);
+        res.status(500).json({ message: "Error retrieving actions for the project."})
+      })
+  });
+
+//==========================================================
+// DELETE/remove
+//==========================================================
+  
+  router.delete('/:id', validateProjectId, (req, res) => {
+    Projects.remove(req.params.id)
+      .then(project => {
+        if (project > 0) {
+          res.status(200).json({ message: "Project has been deleted." })
+        } else {
+          res.status(404).json({ message: "Project could not be found."})
+        }
+      })
+      .catch(error => {
+        console.log(error);
+        res.status(500).json({ message: "Error deleting project from database." })
+      })
   });
 
 //==========================================================
 // READ/insert
 //==========================================================
-
-router.post('/', (req, res) => {
-    Hubs.insert(req.body)
-    .then(hub => {
-      res.status(201).json(hub);
-    })
-    .catch(error => {
-      // log error to database
-      console.log(error);
-      res.status(500).json({
-        message: 'Error adding the hub',
-      });
-    });
+  
+  router.put('/:id', validateProjectId, validateProject, (req, res) => {
+    Projects.update(req.params.id, req.body)
+      .then(project => {
+        if (project) {
+          res.status(200).json(project);
+        } else {
+          res.status(404).json({ message: "Project could not be found."})
+        }
+      })
+      .catch(error => {
+        console.log(error);
+        res.status(500).json({ message: "Error retrieving project from database."})
+      })
   });
+  
+  //==================================================
+  //CUSTOM MIDDLEWARE
+  //==================================================
+  
+  function validateProjectId(req, res, next) {
+    const { id } = req.params;
+    Projects.get(id)
+      .then(project => {
+        if (project) {
+          req.project = project;
+          next();
+        } else {
+          next(new Error("invalid project id"))
+        }
+      })
+      .catch(error => {
+        console.log(error);
+        res.status(500).json({ message: "exception", error})
+      })
+  
+  }
 
-//==========================================================
-// UPDATE
-//==========================================================
-router.put('/:id', (req, res) => {
-    const changes = req.body;
-    Hubs.update(req.params.id, changes)
-    .then(hub => {
-      if (hub) {
-        res.status(200).json(hub);
-      } else {
-        res.status(404).json({ message: 'The hub could not be found' });
-      }
-    })
-
-//==========================================================
-// DELETE/remove
-//==========================================================
-
-router.delete('/:id', (req, res) => {
-    Hubs.remove(req.params.id)
-    .then(count => {
-      if (count > 0) {
-        res.status(200).json({ message: 'The hub has been nuked' });
-      } else {
-        res.status(404).json({ message: 'The hub could not be found' });
-      }
-    })
-    .catch(error => {
-      // log error to database
-      console.log(error);
-      res.status(500).json({
-        message: 'Error removing the hub',
-      });
-    });
-  });
-
-
-router.post('/:id/projects', validateProject(), validateProject(), (req, res) => {
-    //NEW PROJECT REQUEST METHOD
-    const newProject = {
-        text: req.body.text,
-        project_id: req.params.id,
+  
+  function validateProject(req, res, next) {
+    const reqBody = req.body;
+    const { name, description } = req.body;
+    if (!reqBody || reqBody === {}) {
+      res.status(400).json({ message: "missing project data" })
+    } else if (!name || name === undefined || !description || description === undefined) {
+      res.status(400).json({ message: "missing required name or description field" })
+    } else {
+      next();
     }
-
-    projectDb
-        .insert(newProject)
-        .then((post) => {
-            res.status(201).json(post);
-        })
-        .catch((err) =>{
-            res.status(500).json({
-                message: "Project post could not be created",
-            })
-        })
-})
-
+  }
+  
+  function validateAction(req, res, next) {
+    const reqBody = req.body;
+    const { description, notes } = req.body;
+    if (!reqBody || reqBody === {}) {
+      res.status(400).json({ message: "missing action data" })
+    } else if (!description || description === undefined || !notes || notes === undefined) {
+      res.status(400).json({ message: "missing required description or notes field" })
+    } else {
+      next();
+    }
+  }
+  
+  module.exports = router; 

@@ -15,21 +15,9 @@ Go code!
 
 //^^^^ This is not helping.....^^^^ -AM
 
-const express = require('express');
-const server = express();
+const app = require('./server.js');
+const PORT = 5000;
 
-server.get('/', (req, res) => {
-  res.send('Hey Dude!');
+app.listen(PORT, () => {
+	console.log(`Server running on http://localhost:${PORT}`);
 });
-
-
-server.get("/data/helpers", (req, res) => {
-    console.log("I'm Logging now")
-  });
-
-
-
-
-server.listen(5000, () => {
-    console.log("Server initialized on port 5000");
-  });
