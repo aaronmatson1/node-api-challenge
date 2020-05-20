@@ -6,8 +6,8 @@ const actions = require("./Actions/actions")
 
 server.use(express.json());
 server.use(helmet());
-server.use("api/actions", actions)
-server.use("api/projects", projects)
+server.use("/api/actions", actions)
+server.use("/api/projects", projects)
 
 
 server.get('/', (req, res) => {
