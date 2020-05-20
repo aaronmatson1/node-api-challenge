@@ -48,6 +48,8 @@ Demonstrate your understanding of this Sprint's concepts by answering the follow
 
 - [ ] Describe a Resource?
 
+    A Resource are the things that our application cares about. (ex. Users, Products, Orders, Clients, Returns, etc.)
+
 - [ ] What can the API return to help clients know if a request was successful?
 
     It can return a Status Code in the 200's. This idicates that the client’s request was accepted successfully.    
